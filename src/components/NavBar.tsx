@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Menu, X, Search, Book } from 'lucide-react';
+import { ShoppingCart, Menu, X, Search, Book, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/context/CartContext';
@@ -52,6 +52,10 @@ const NavBar = () => {
             </Link>
             <Link to="/categories" className="text-bookstore-dark hover:text-bookstore-primary transition-colors">
               Categories
+            </Link>
+            <Link to="/auth" className="text-bookstore-dark hover:text-bookstore-primary transition-colors">
+              <User className="h-5 w-5 inline-block mr-1" />
+              Login
             </Link>
             <Link to="/cart" className="relative">
               <Button variant="ghost" className="p-2">
@@ -108,6 +112,14 @@ const NavBar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Categories
+              </Link>
+              <Link 
+                to="/auth" 
+                className="px-3 py-2 text-bookstore-dark hover:text-bookstore-primary rounded-md transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User className="h-5 w-5 inline-block mr-1" />
+                Login
               </Link>
             </div>
           </div>
