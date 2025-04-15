@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from "zod";
@@ -11,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import Layout from '@/components/Layout';
+import { useAuth } from '@/hooks/useAuth';
 
 // Form validation schemas
 const loginSchema = z.object({
@@ -39,6 +39,7 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 const AuthPage = () => {
   const [activeTab, setActiveTab] = useState<"login" | "signup" | "forgot-password">("login");
   const navigate = useNavigate();
+  const { signIn, signUp } = useAuth();
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
@@ -68,16 +69,26 @@ const AuthPage = () => {
     },
   });
 
-  const onLoginSubmit = (data: LoginFormValues) => {
-    console.log("Login data:", data);
-    // In a real app, you would handle authentication here
+  const onLoginSubmit = async (data: LoginFormValues) => {
+    const { error } = await signIn(data.email, data.password);
+    
+    if (error) {
+      toast.error(error.message || "Login failed");
+      return;
+    }
+    
     toast.success("Login successful!");
     navigate('/');
   };
 
-  const onSignupSubmit = (data: SignupFormValues) => {
-    console.log("Signup data:", data);
-    // In a real app, you would handle registration here
+  const onSignupSubmit = async (data: SignupFormValues) => {
+    const { error } = await signUp(data.email, data.password);
+    
+    if (error) {
+      toast.error(error.message || "Signup failed");
+      return;
+    }
+    
     toast.success("Account created successfully!");
     setActiveTab("login");
   };
