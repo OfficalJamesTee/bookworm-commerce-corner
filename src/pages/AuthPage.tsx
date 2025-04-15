@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, Lock, UserPlus, LogIn, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, UserPlus, LogIn, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -28,11 +28,16 @@ const signupSchema = z.object({
   path: ["confirmPassword"],
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 const AuthPage = () => {
-  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+  const [activeTab, setActiveTab] = useState<"login" | "signup" | "forgot-password">("login");
   const navigate = useNavigate();
 
   // Login form
@@ -55,6 +60,14 @@ const AuthPage = () => {
     },
   });
 
+  // Forgot password form
+  const forgotPasswordForm = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
   const onLoginSubmit = (data: LoginFormValues) => {
     console.log("Login data:", data);
     // In a real app, you would handle authentication here
@@ -66,6 +79,13 @@ const AuthPage = () => {
     console.log("Signup data:", data);
     // In a real app, you would handle registration here
     toast.success("Account created successfully!");
+    setActiveTab("login");
+  };
+
+  const onForgotPasswordSubmit = (data: ForgotPasswordFormValues) => {
+    console.log("Forgot password data:", data);
+    // In a real app, you would handle password reset here
+    toast.success("Password reset link sent to your email!");
     setActiveTab("login");
   };
 
@@ -90,7 +110,7 @@ const AuthPage = () => {
             <Tabs 
               defaultValue={activeTab} 
               value={activeTab} 
-              onValueChange={(v) => setActiveTab(v as "login" | "signup")} 
+              onValueChange={(v) => setActiveTab(v as "login" | "signup" | "forgot-password")} 
               className="w-full"
             >
               <TabsList className="grid grid-cols-2 mb-8">
@@ -134,9 +154,13 @@ const AuthPage = () => {
                       )}
                     />
                     <div className="text-sm text-right">
-                      <a href="#" className="text-bookstore-primary hover:underline">
+                      <button 
+                        type="button"
+                        onClick={() => setActiveTab("forgot-password")}
+                        className="text-bookstore-primary hover:underline"
+                      >
                         Forgot password?
-                      </a>
+                      </button>
                     </div>
                     <Button type="submit" className="w-full" size="lg">
                       <LogIn className="h-4 w-4 mr-2" /> Login
@@ -215,6 +239,46 @@ const AuthPage = () => {
                   </form>
                 </Form>
               </TabsContent>
+              
+              <TabsContent value="forgot-password">
+                <div className="mb-4">
+                  <h2 className="text-xl font-semibold mb-2">Reset your password</h2>
+                  <p className="text-gray-500">Enter your email and we'll send you a link to reset your password.</p>
+                </div>
+                <Form {...forgotPasswordForm}>
+                  <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)} className="space-y-4">
+                    <FormField
+                      control={forgotPasswordForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                              <Input placeholder="you@example.com" className="pl-10" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex flex-col space-y-2">
+                      <Button type="submit" className="w-full" size="lg">
+                        Send Reset Link <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="w-full"
+                        onClick={() => setActiveTab("login")}
+                      >
+                        Back to Login
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </TabsContent>
             </Tabs>
             
             <div className="mt-8 text-center text-sm text-gray-500">
@@ -229,7 +293,7 @@ const AuthPage = () => {
                     Sign up
                   </button>
                 </p>
-              ) : (
+              ) : activeTab === "signup" ? (
                 <p>
                   Already have an account?{" "}
                   <button
@@ -240,7 +304,7 @@ const AuthPage = () => {
                     Login
                   </button>
                 </p>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
